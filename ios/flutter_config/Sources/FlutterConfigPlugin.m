@@ -1,5 +1,7 @@
 #import "FlutterConfigPlugin.h"
-#import "GeneratedDotEnv.m" // written during build by BuildDotenvConfig.ruby
+#if !defined(FLUTTER_CONFIG_SWIFTPM)
+#import "../../Classes/GeneratedDotEnv.m"
+#endif
 
 @implementation FlutterConfigPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -11,7 +13,19 @@
 }
 
 + (NSDictionary *)env {
+#if defined(FLUTTER_CONFIG_SWIFTPM)
+    static NSDictionary *variables;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *path = [NSBundle.mainBundle pathForResource:@"FlutterConfigEnv" ofType:@"json"];
+        NSData *data = path ? [NSData dataWithContentsOfFile:path] : nil;
+        id decoded = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:NULL] : nil;
+        variables = [decoded isKindOfClass:[NSDictionary class]] ? decoded : @{};
+    });
+    return variables;
+#else
     return (NSDictionary *)DOT_ENV;
+#endif
 }
 
 + (NSString *)envFor: (NSString *)key {
@@ -20,14 +34,12 @@
 }
 
 - (NSDictionary *)constantsToExport {
-    return DOT_ENV
+    return [FlutterConfigPlugin env];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"loadEnvVariables" isEqualToString:call.method]) {
-      NSDictionary *variables = (NSDictionary *)DOT_ENV;
-      
-      result(variables);
+      result([FlutterConfigPlugin env]);
   } else {
     result(FlutterMethodNotImplemented);
   }

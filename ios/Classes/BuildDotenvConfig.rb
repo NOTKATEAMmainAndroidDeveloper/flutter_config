@@ -13,7 +13,6 @@ Encoding.default_external = Encoding::UTF_8
 Encoding.default_internal = Encoding::UTF_8
 
 dotenv, custom_env = read_dot_env(envs_root)
-puts "read dotenv #{dotenv}"
 
 # create obj file that sets DOT_ENV as a NSDictionary
 dotenv_objc = dotenv.map { |k, v| %(@"#{k}":@"#{v.chomp}") }.join(',')

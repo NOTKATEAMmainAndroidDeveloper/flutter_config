@@ -7,16 +7,13 @@ Encoding.default_external = Encoding::UTF_8
 Encoding.default_internal = Encoding::UTF_8
 
 # TODO: introduce a parameter which controls how to build relative path
-def read_dot_env(envs_root)
+def read_dot_env(envs_root, escape_objc: true)
   defaultEnvFile = '.env'
   
   puts "going to read env file from root folder #{envs_root}"
 
-  if File.exist?("#{envs_root}../.envfile")
-    envFilePath = "#{envs_root}../.envfile"
-  elsif File.exist?("#{envs_root}/.envfile")
-    envFilePath = "#{envs_root}.envfile"
-  end
+  selector_paths = [File.join(envs_root, '..', '.envfile'), File.join(envs_root, '.envfile')]
+  envFilePath = selector_paths.find { |selector| File.file?(selector) }
   # pick a custom env file if set
   unless envFilePath.nil?
     puts "file exists at #{envFilePath}"
@@ -31,7 +28,7 @@ def read_dot_env(envs_root)
     # https://regex101.com/r/cbm5Tp/1
     dotenv_pattern = /^(?:export\s+|)(?<key>[[:alnum:]_]+)=((?<quote>["'])?(?<val>.*?[^\\])\k<quote>?|)$/
 
-    path = File.expand_path(File.join("#{envs_root}..", file.to_s))
+    path = File.expand_path(File.join(envs_root, "..", file.to_s))
 
     puts "path #{path}"
     if File.exist?(path)
@@ -55,7 +52,8 @@ def read_dot_env(envs_root)
 
       key = m[:key]
       # Ensure string (in case of empty value) and escape any quotes present in the value.
-      val = m[:val].to_s.gsub('"', '\"')
+      val = m[:val].to_s
+      val = val.gsub('"', '\"') if escape_objc
       h.merge(key => val)
     end
     rescue Errno::ENOENT

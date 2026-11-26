@@ -12,8 +12,9 @@ Config Variables for your Flutter Apps.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
-  s.public_header_files = 'Classes/**/*.h'
+  s.source_files = 'flutter_config/Sources/**/*.{h,m}'
+  s.public_header_files = 'flutter_config/Sources/include/*.h'
+  s.preserve_paths = 'Classes/*.rb'
   s.dependency 'Flutter'
 
   # s.ios.deployment_target = '10.0'

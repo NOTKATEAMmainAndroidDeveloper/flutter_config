@@ -75,3 +75,19 @@ void main() {
   });
 }
 ```
+
+### iOS with Swift Package Manager
+
+Flutter discovers the package at `ios/flutter_config/Package.swift`. SwiftPM cannot read
+the consuming app's dotenv file automatically. Add a **Run Script** phase to the app
+target after **Copy Bundle Resources**, using the actual checkout path for this plugin:
+
+```sh
+ruby "<flutter_config checkout>/ios/Classes/BuildSwiftPackageConfig.rb" \
+  "$SRCROOT" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/FlutterConfigEnv.json"
+```
+
+Declare `$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/FlutterConfigEnv.json`
+as the script output. If script sandboxing is enabled, declare the Ruby scripts and
+your selected dotenv file as inputs. Disable dependency analysis if switching the
+dotenv file outside the declared inputs. CocoaPods still uses its existing generator.
